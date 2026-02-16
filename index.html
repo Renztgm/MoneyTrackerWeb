@@ -182,6 +182,29 @@
             to { transform: rotate(360deg); }
         }
     </style>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCxMoF0mTrZYej5K8h1_MkXQ3eKQ-4FZvE",
+            authDomain: "moneytracker-c1dd1.firebaseapp.com",
+            projectId: "moneytracker-c1dd1",
+            storageBucket: "moneytracker-c1dd1.firebasestorage.app",
+            messagingSenderId: "426881166394",
+            appId: "1:426881166394:web:8f8ad1b09fc5b9267ede6e"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        // Enable persistence so user stays logged in
+        setPersistence(auth, browserLocalPersistence);
+        
+        window.firebaseAuth = auth;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+    </script>
 </head>
 <body>
     <div class="login-container">
@@ -216,9 +239,6 @@
     </div>
 
     <script>
-        // Firebase API Key
-        const FIREBASE_API_KEY = 'AIzaSyCxMoF0mTrZYej5K8h1_MkXQ3eKQ-4FZvE';
-        
         // Get error from URL if exists
         window.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -233,15 +253,13 @@
             
             // Transform Firebase error messages to user-friendly ones
             let userMessage = message;
-            if (message.includes('INVALID_PASSWORD') || message.includes('INVALID_LOGIN_CREDENTIALS')) {
+            if (message.includes('auth/invalid-credential') || message.includes('auth/wrong-password') || message.includes('auth/user-not-found')) {
                 userMessage = 'Invalid email or password. Please try again.';
-            } else if (message.includes('EMAIL_NOT_FOUND')) {
-                userMessage = 'No account found with this email address.';
-            } else if (message.includes('USER_DISABLED')) {
+            } else if (message.includes('auth/user-disabled')) {
                 userMessage = 'This account has been disabled.';
-            } else if (message.includes('TOO_MANY_ATTEMPTS')) {
+            } else if (message.includes('auth/too-many-requests')) {
                 userMessage = 'Too many failed login attempts. Please try again later.';
-            } else if (message.includes('INVALID_EMAIL')) {
+            } else if (message.includes('auth/invalid-email')) {
                 userMessage = 'Please enter a valid email address.';
             }
             
@@ -274,52 +292,14 @@
             loginBtn.textContent = 'Logging in...';
             
             try {
-                // Call Firebase Authentication REST API
-                const response = await fetch(
-                    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            email: email,
-                            password: password,
-                            returnSecureToken: true
-                        })
-                    }
-                );
+                // Sign in with Firebase Auth SDK
+                await signInWithEmailAndPassword(firebaseAuth, email, password);
                 
-                const data = await response.json();
-                
-                if (response.ok && data.idToken) {
-                    // Login successful - send to PHP to create session
-                    const formData = new FormData();
-                    formData.append('email', email);
-                    formData.append('password', password);
-                    formData.append('idToken', data.idToken);
-                    formData.append('localId', data.localId);
-                    
-                    // Create session via PHP
-                    const sessionResponse = await fetch('api/login.php', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    if (sessionResponse.ok) {
-                        // Redirect to dashboard
-                        window.location.href = 'public/dashboard.php';
-                    } else {
-                        throw new Error('Session creation failed');
-                    }
-                } else {
-                    // Login failed
-                    const errorMessage = data.error?.message || 'Login failed. Please try again.';
-                    showError(errorMessage);
-                }
+                // Login successful - auth state is persisted, redirect to dashboard
+                window.location.href = 'public/dashboard.php';
             } catch (error) {
                 console.error('Login error:', error);
-                showError(error.message || 'Network error. Please check your connection and try again.');
+                showError(error.code || error.message || 'Login failed. Please try again.');
             } finally {
                 // Remove loading state
                 loginContainer.classList.remove('loading');

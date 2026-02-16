@@ -1,17 +1,3 @@
-<?php
-session_start();
-if (!isset($_SESSION['user'])) {
-    header("Location: ../index.html");
-    exit;
-}
-
-$fullName = $_SESSION['fullName'] ?? 'User';
-$email = $_SESSION['email'] ?? '';
-$age = $_SESSION['age'] ?? '';
-$gender = $_SESSION['gender'] ?? '';
-$profilePicture = $_SESSION['profilePicture'] ?? '';
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,6 +15,54 @@ $profilePicture = $_SESSION['profilePicture'] ?? '';
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f5f5;
             min-height: 100vh;
+        }
+
+        body.dark-mode {
+            background: #0f1115;
+            color: #e6e9ef;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-screen.hidden {
+            display: none;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 18px;
+            margin-top: 20px;
+            font-weight: 500;
         }
 
         .header {
@@ -60,6 +94,7 @@ $profilePicture = $_SESSION['profilePicture'] ?? '';
             text-decoration: none;
             font-size: 14px;
             transition: background 0.3s;
+            cursor: pointer;
         }
 
         .back-btn:hover {
@@ -79,89 +114,20 @@ $profilePicture = $_SESSION['profilePicture'] ?? '';
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
+        body.dark-mode .profile-card {
+            background: #1b1f26;
+            color: #e6e9ef;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+        }
+
         .profile-card h2 {
             color: #333;
             margin-bottom: 30px;
             text-align: center;
         }
 
-        .profile-picture-section {
-            text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 30px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .profile-picture-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        .profile-picture {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #667eea;
-            background: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 60px;
-            color: #667eea;
-        }
-
-        .profile-picture img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .upload-btn-wrapper {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-        }
-
-        .upload-btn {
-            background: #667eea;
-            color: white;
-            border: 3px solid white;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            transition: background 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .upload-btn:hover {
-            background: #764ba2;
-        }
-
-        .upload-btn input[type=file] {
-            display: none;
-        }
-
-        .picture-hint {
-            margin-top: 15px;
-            color: #666;
-            font-size: 13px;
-        }
-
-        .remove-picture-btn {
-            margin-top: 10px;
-            background: none;
-            border: none;
-            color: #f44336;
-            font-size: 13px;
-            cursor: pointer;
-            text-decoration: underline;
+        body.dark-mode .profile-card h2 {
+            color: #e6e9ef;
         }
 
         .form-section {
@@ -177,6 +143,10 @@ $profilePicture = $_SESSION['profilePicture'] ?? '';
             border-bottom: 2px solid #667eea;
         }
 
+        body.dark-mode .section-title {
+            color: #e6e9ef;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -189,6 +159,10 @@ $profilePicture = $_SESSION['profilePicture'] ?? '';
             font-size: 14px;
         }
 
+        body.dark-mode .form-group label {
+            color: #cfd6e4;
+        }
+
         .form-group input,
         .form-group select {
             width: 100%;
@@ -197,6 +171,13 @@ $profilePicture = $_SESSION['profilePicture'] ?? '';
             border-radius: 5px;
             font-size: 14px;
             transition: border-color 0.3s;
+        }
+
+        body.dark-mode .form-group input,
+        body.dark-mode .form-group select {
+            background: #141820;
+            color: #e6e9ef;
+            border-color: #2a2f3a;
         }
 
         .form-group input:focus,
@@ -208,6 +189,11 @@ $profilePicture = $_SESSION['profilePicture'] ?? '';
         .form-group input:disabled {
             background: #f5f5f5;
             cursor: not-allowed;
+        }
+
+        body.dark-mode .form-group input:disabled {
+            background: #171b22;
+            color: #9aa3b2;
         }
 
         .form-row {
@@ -253,15 +239,15 @@ $profilePicture = $_SESSION['profilePicture'] ?? '';
         }
 
         .message.success {
-            background: #efe;
-            border: 1px solid #cfc;
-            color: #3c3;
+            background: #e8f5e9;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
         }
 
         .message.error {
-            background: #fee;
-            border: 1px solid #fcc;
-            color: #c33;
+            background: #ffebee;
+            border: 1px solid #f44336;
+            color: #c62828;
         }
 
         @keyframes slideDown {
@@ -281,220 +267,276 @@ $profilePicture = $_SESSION['profilePicture'] ?? '';
             margin-top: 5px;
         }
 
+        body.dark-mode .password-hint {
+            color: #9aa3b2;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #cfd6e4;
+            border-radius: 999px;
+            transition: background 0.3s;
+        }
+
+        .toggle-slider::before {
+            position: absolute;
+            content: '';
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: #667eea;
+        }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(24px);
+        }
+
         @media (max-width: 600px) {
             .form-row {
                 grid-template-columns: 1fr;
+            }
+
+            .profile-card {
+                padding: 24px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .container {
+                padding: 0 12px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .back-btn {
+                width: 100%;
+            }
+
+            .btn-primary {
+                padding: 12px 16px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader"></div>
+        <div class="loading-text">Loading profile...</div>
+    </div>
+
     <div class="header">
         <div class="header-content">
             <h1>✏️ Edit Profile</h1>
-            <a href="dashboard.php" class="back-btn">← Back to Dashboard</a>
+            <button class="back-btn" onclick="window.location.href='dashboard.php'">← Back to Dashboard</button>
         </div>
     </div>
 
     <div class="container">
         <div class="profile-card">
-            <h2>Update Your Profile</h2>
+            <h2>Edit Your Profile</h2>
 
             <div id="messageDiv" class="message"></div>
 
-            <!-- Profile Picture Section -->
-            <div class="profile-picture-section">
-                <div class="profile-picture-container">
-                    <div class="profile-picture" id="profilePicturePreview">
-                        <?php if (!empty($profilePicture)): ?>
-                            <img src="<?php echo htmlspecialchars($profilePicture); ?>" alt="Profile Picture">
-                        <?php else: ?>
-                            <span>👤</span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="upload-btn-wrapper">
-                        <label for="profilePictureInput" class="upload-btn">
-                            📷
-                            <input type="file" id="profilePictureInput" accept="image/*">
-                        </label>
-                    </div>
-                </div>
-                <p class="picture-hint">Click the camera icon to upload a profile picture (max 2MB)</p>
-                <?php if (!empty($profilePicture)): ?>
-                    <button class="remove-picture-btn" id="removePictureBtn">Remove picture</button>
-                <?php endif; ?>
-            </div>
-
-            <!-- Personal Information Section -->
+            <!-- Profile Information Form -->
             <form id="profileForm">
                 <div class="form-section">
-                    <h3 class="section-title">Personal Information</h3>
-                    
+                    <div class="section-title">Personal Information</div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" disabled>
+                    </div>
+
                     <div class="form-group">
                         <label for="fullName">Full Name *</label>
-                        <input type="text" id="fullName" name="fullName" value="<?php echo htmlspecialchars($fullName); ?>" required>
+                        <input type="text" id="fullName" required placeholder="Enter your full name">
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label for="age">Age *</label>
-                            <input type="number" id="age" name="age" min="13" max="120" value="<?php echo htmlspecialchars($age); ?>" required>
+                            <input type="number" id="age" min="13" max="120" required placeholder="Enter your age">
                         </div>
 
                         <div class="form-group">
-                            <label for="gender">Gender</label>
-                            <select id="gender" name="gender">
-                                <option value="">Select</option>
-                                <option value="male" <?php echo $gender === 'male' ? 'selected' : ''; ?>>Male</option>
-                                <option value="female" <?php echo $gender === 'female' ? 'selected' : ''; ?>>Female</option>
-                                <option value="other" <?php echo $gender === 'other' ? 'selected' : ''; ?>>Other</option>
-                                <option value="prefer-not-to-say" <?php echo $gender === 'prefer-not-to-say' ? 'selected' : ''; ?>>Prefer not to say</option>
+                            <label for="gender">Gender *</label>
+                            <select id="gender" required>
+                                <option value="">Select gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="prefer-not-to-say">Prefer not to say</option>
                             </select>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" disabled>
-                        <p class="password-hint">Email cannot be changed</p>
-                    </div>
                 </div>
 
-                <button type="submit" class="btn-primary" id="saveProfileBtn">Save Changes</button>
+                <div class="form-section">
+                    <div class="section-title">Settings</div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="currency">Currency</label>
+                            <select id="currency">
+                                <option value="USD">USD ($)</option>
+                                <option value="PHP">PHP (PHP)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="darkModeToggle">Dark Mode</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="darkModeToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="saveProfileBtn">Save Changes</button>
+                </div>
             </form>
 
-            <!-- Password Change Section -->
-            <form id="passwordForm" style="margin-top: 40px;">
+            <!-- Change Password Form -->
+            <form id="passwordForm">
                 <div class="form-section">
-                    <h3 class="section-title">Change Password</h3>
-                    
+                    <div class="section-title">Change Password</div>
+
                     <div class="form-group">
-                        <label for="currentPassword">Current Password *</label>
-                        <input type="password" id="currentPassword" name="currentPassword" placeholder="Enter current password">
-                        <p class="password-hint">Leave blank if you don't want to change password</p>
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" placeholder="Enter current password">
                     </div>
 
                     <div class="form-group">
-                        <label for="newPassword">New Password *</label>
-                        <input type="password" id="newPassword" name="newPassword" placeholder="Enter new password (min. 6 characters)">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" placeholder="Enter new password">
+                        <div class="password-hint">Password must be at least 6 characters</div>
                     </div>
 
                     <div class="form-group">
-                        <label for="confirmNewPassword">Confirm New Password *</label>
-                        <input type="password" id="confirmNewPassword" name="confirmNewPassword" placeholder="Confirm new password">
+                        <label for="confirmNewPassword">Confirm New Password</label>
+                        <input type="password" id="confirmNewPassword" placeholder="Confirm new password">
                     </div>
+
+                    <button type="submit" class="btn-primary" id="changePasswordBtn">Change Password</button>
                 </div>
-
-                <button type="submit" class="btn-primary" id="changePasswordBtn">Change Password</button>
             </form>
         </div>
     </div>
 
-    <script>
-        const FIREBASE_API_KEY = 'AIzaSyCxMoF0mTrZYej5K8h1_MkXQ3eKQ-4FZvE';
-        let uploadedImageData = null;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-        // Profile Picture Upload Handler
-        document.getElementById('profilePictureInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        const firebaseConfig = {
+            apiKey: "AIzaSyCxMoF0mTrZYej5K8h1_MkXQ3eKQ-4FZvE",
+            authDomain: "moneytracker-c1dd1.firebaseapp.com",
+            projectId: "moneytracker-c1dd1",
+            storageBucket: "moneytracker-c1dd1.firebasestorage.app",
+            messagingSenderId: "71356341269",
+            appId: "1:71356341269:web:8ae54dbdfebe06acd3c21c",
+            measurementId: "G-49036TSCHY"
+        };
 
-            // Validate file size (max 2MB)
-            if (file.size > 2 * 1024 * 1024) {
-                showMessage('Image size must be less than 2MB', 'error');
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        const defaultSettings = {
+            currency: 'USD',
+            darkMode: false
+        };
+        let currentSettings = { ...defaultSettings };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../index.html';
                 return;
             }
 
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                showMessage('Please select a valid image file', 'error');
-                return;
-            }
-
-            // Read and preview image
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imgData = e.target.result;
-                uploadedImageData = imgData;
-                
-                // Update preview
-                document.getElementById('profilePicturePreview').innerHTML = 
-                    `<img src="${imgData}" alt="Profile Picture">`;
-                
-                // Upload immediately
-                uploadProfilePicture(imgData);
-            };
-            reader.readAsDataURL(file);
+            currentUser = user;
+            await loadProfile(user);
+            document.getElementById('loadingScreen').classList.add('hidden');
         });
 
-        // Remove Picture Handler
-        const removePictureBtn = document.getElementById('removePictureBtn');
-        if (removePictureBtn) {
-            removePictureBtn.addEventListener('click', async function() {
-                if (!confirm('Are you sure you want to remove your profile picture?')) {
-                    return;
-                }
-
-                try {
-                    const formData = new FormData();
-                    formData.append('action', 'removeProfilePicture');
-
-                    const response = await fetch('../api/user.php', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok && data.success) {
-                        document.getElementById('profilePicturePreview').innerHTML = '<span>👤</span>';
-                        this.style.display = 'none';
-                        showMessage('Profile picture removed successfully', 'success');
-                    } else {
-                        throw new Error(data.error || 'Failed to remove picture');
-                    }
-                } catch (error) {
-                    showMessage(error.message, 'error');
-                }
-            });
-        }
-
-        async function uploadProfilePicture(imageData) {
+        async function loadProfile(user) {
             try {
-                const formData = new FormData();
-                formData.append('profilePicture', imageData);
-                formData.append('action', 'updateProfilePicture');
+                // Set email (disabled field)
+                document.getElementById('email').value = user.email || '';
 
-                const response = await fetch('../api/user.php', {
-                    method: 'POST',
-                    body: formData
-                });
+                // Load profile from Firestore
+                const profileRef = doc(db, 'users', user.uid);
+                const profileSnap = await getDoc(profileRef);
 
-                const data = await response.json();
+                if (profileSnap.exists()) {
+                    const profile = profileSnap.data();
+                    document.getElementById('fullName').value = profile.fullName || '';
+                    document.getElementById('age').value = profile.age || '';
+                    document.getElementById('gender').value = profile.gender || '';
 
-                if (response.ok && data.success) {
-                    showMessage('Profile picture updated successfully!', 'success');
-                    
-                    // Show remove button if not visible
-                    const removeBtn = document.getElementById('removePictureBtn');
-                    if (removeBtn) {
-                        removeBtn.style.display = 'inline-block';
-                    }
+                    currentSettings = { ...defaultSettings, ...(profile.settings || {}) };
+                    document.getElementById('currency').value = currentSettings.currency;
+                    document.getElementById('darkModeToggle').checked = !!currentSettings.darkMode;
+                    applyTheme(!!currentSettings.darkMode);
                 } else {
-                    throw new Error(data.error || 'Failed to upload picture');
+                    currentSettings = { ...defaultSettings };
+                    document.getElementById('currency').value = currentSettings.currency;
+                    document.getElementById('darkModeToggle').checked = !!currentSettings.darkMode;
+                    applyTheme(!!currentSettings.darkMode);
                 }
             } catch (error) {
-                showMessage(error.message, 'error');
+                console.error('Error loading profile:', error);
+                showMessage('Error loading profile data', 'error');
             }
         }
+
+        document.getElementById('darkModeToggle').addEventListener('change', function() {
+            applyTheme(this.checked);
+        });
 
         // Profile Form Handler
         document.getElementById('profileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const fullName = document.getElementById('fullName').value.trim();
-            const age = document.getElementById('age').value;
+            const age = parseInt(document.getElementById('age').value);
             const gender = document.getElementById('gender').value;
+            const currency = document.getElementById('currency').value;
+            const darkMode = document.getElementById('darkModeToggle').checked;
 
             if (!fullName || fullName.length < 2) {
                 showMessage('Please enter a valid full name', 'error');
@@ -512,26 +554,23 @@ $profilePicture = $_SESSION['profilePicture'] ?? '';
             saveBtn.textContent = 'Saving...';
 
             try {
-                const formData = new FormData();
-                formData.append('fullName', fullName);
-                formData.append('age', age);
-                formData.append('gender', gender);
-                formData.append('action', 'updateProfile');
+                const profileRef = doc(db, 'users', currentUser.uid);
+                await setDoc(profileRef, {
+                    fullName: fullName,
+                    age: age,
+                    gender: gender,
+                    email: currentUser.email,
+                    settings: {
+                        currency: currency,
+                        darkMode: darkMode
+                    },
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
 
-                const response = await fetch('../api/user.php', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    showMessage('Profile updated successfully!', 'success');
-                } else {
-                    throw new Error(data.error || 'Failed to update profile');
-                }
+                showMessage('Profile updated successfully!', 'success');
             } catch (error) {
-                showMessage(error.message, 'error');
+                console.error('Error updating profile:', error);
+                showMessage('Failed to update profile: ' + error.message, 'error');
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.textContent = originalText;
@@ -567,25 +606,31 @@ $profilePicture = $_SESSION['profilePicture'] ?? '';
             changeBtn.textContent = 'Changing Password...';
 
             try {
-                const formData = new FormData();
-                formData.append('currentPassword', currentPassword);
-                formData.append('newPassword', newPassword);
+                // Re-authenticate user before changing password
+                const credential = EmailAuthProvider.credential(
+                    currentUser.email,
+                    currentPassword
+                );
+                await reauthenticateWithCredential(currentUser, credential);
 
-                const response = await fetch('../api/change-password.php', {
-                    method: 'POST',
-                    body: formData
-                });
+                // Update password
+                await updatePassword(currentUser, newPassword);
 
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    showMessage('Password changed successfully!', 'success');
-                    document.getElementById('passwordForm').reset();
-                } else {
-                    throw new Error(data.error || 'Failed to change password');
-                }
+                showMessage('Password changed successfully!', 'success');
+                document.getElementById('passwordForm').reset();
             } catch (error) {
-                showMessage(error.message, 'error');
+                console.error('Error changing password:', error);
+                let errorMessage = 'Failed to change password';
+                
+                if (error.code === 'auth/wrong-password') {
+                    errorMessage = 'Current password is incorrect';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'New password is too weak';
+                } else if (error.code === 'auth/requires-recent-login') {
+                    errorMessage = 'Please log out and log in again before changing password';
+                }
+                
+                showMessage(errorMessage, 'error');
             } finally {
                 changeBtn.disabled = false;
                 changeBtn.textContent = originalText;
@@ -600,6 +645,10 @@ $profilePicture = $_SESSION['profilePicture'] ?? '';
             setTimeout(() => {
                 messageDiv.classList.remove('show');
             }, 5000);
+        }
+
+        function applyTheme(isDark) {
+            document.body.classList.toggle('dark-mode', !!isDark);
         }
     </script>
 </body>
