@@ -264,12 +264,78 @@
         .terms a:hover {
             text-decoration: underline;
         }
+
+        .form-section {
+            display: block;
+        }
+
+        .form-section.hidden {
+            display: none;
+        }
+
+        .otp-timer {
+            text-align: center;
+            font-size: 14px;
+            color: #667eea;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        .otp-timer.expired {
+            color: #f44336;
+        }
+
+        .resend-btn {
+            background: transparent;
+            color: #667eea;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+            font-weight: 600;
+        }
+
+        .resend-btn:hover {
+            color: #764ba2;
+        }
+
+        .resend-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .otp-input-group {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .otp-input.error {
+            border-color: #f44336;
+        }
     </style>
     <!-- Firebase SDK -->
     <script src="firebase-config.php"></script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
+        import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
         import { getFirestore, doc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
         
         const firebaseConfig = window.FIREBASE_CONFIGS.authApp;
@@ -281,6 +347,7 @@
         window.firebaseAuth = auth;
         window.firebaseDb = db;
         window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.updateProfile = updateProfile;
         window.doc = doc;
         window.setDoc = setDoc;
         window.serverTimestamp = serverTimestamp;
@@ -296,7 +363,56 @@
         <div id="errorMessage" class="error-message"></div>
         <div id="successMessage" class="success-message"></div>
         
-        <form id="signupForm">
+        <!-- Step 1: Email Verification -->
+        <form id="emailForm" class="form-section">
+            <div class="form-group full-width">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required autofocus>
+                <div class="error-text" id="emailError">Please enter a valid email</div>
+            </div>
+            
+            <button type="submit" class="signup-btn">Send Verification Code</button>
+            
+            <p style="text-align: center; margin-top: 15px; font-size: 12px; color: #999;">
+                (Check browser console for OTP code during testing)
+            </p>
+        </form>
+
+        <!-- Step 2: OTP Verification Form -->
+        <form id="otpForm" class="form-section hidden">
+            <div class="form-group full-width">
+                <h3 style="text-align: center; color: #333; margin-bottom: 10px;">Verify Your Email</h3>
+                <p style="text-align: center; color: #666; font-size: 14px; margin-bottom: 20px;">
+                    We've sent a 6-digit code to <strong id="otpEmail"></strong>
+                </p>
+            </div>
+
+            <div class="form-group full-width">
+                <label style="text-align: center; display: block;">Enter Code</label>
+                <div class="otp-input-group" id="otpInputGroup">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" required>
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" required>
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" required>
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" required>
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" required>
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" required>
+                </div>
+            </div>
+
+            <div class="otp-timer" id="otpTimer">2:00</div>
+
+            <button type="submit" class="signup-btn" id="verifyOtpBtn">Verify Code</button>
+
+            <p style="text-align: center; margin-top: 15px; font-size: 14px; color: #666;">
+                Didn't receive the code? 
+                <button type="button" class="resend-btn" id="resendBtn" disabled>Resend</button>
+            </p>
+
+            <button type="button" class="signup-btn" id="backBtn" style="background: #999; margin-top: 10px;">Back</button>
+        </form>
+
+        <!-- Step 3: Sign Up Form -->
+        <form id="signupForm" class="form-section hidden">
             <div class="form-group full-width">
                 <label for="fullName">Full Name *</label>
                 <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
@@ -305,9 +421,9 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="age">Age *</label>
-                    <input type="number" id="age" name="age" min="13" max="120" placeholder="Age" required>
-                    <div class="error-text" id="ageError">Age must be between 13-120</div>
+                    <label for="birthdate">Date of Birth *</label>
+                    <input type="date" id="birthdate" name="birthdate" required>
+                    <div class="error-text" id="birthdateError">You must be at least 13 years old</div>
                 </div>
 
                 <div class="form-group">
@@ -320,12 +436,6 @@
                         <option value="prefer-not-to-say">Prefer not to say</option>
                     </select>
                 </div>
-            </div>
-            
-            <div class="form-group full-width">
-                <label for="email">Email Address *</label>
-                <input type="email" id="email" name="email" placeholder="Enter your email" required>
-                <div class="error-text" id="emailError">Please enter a valid email</div>
             </div>
             
             <div class="form-group full-width">
@@ -360,63 +470,25 @@
         // Firebase API Key
         const FIREBASE_API_KEY = window.FIREBASE_API_KEY;
         
-        const form = document.getElementById('signupForm');
-        const fullNameInput = document.getElementById('fullName');
-        const ageInput = document.getElementById('age');
+        // ===== FORM REFERENCES =====
+        const emailForm = document.getElementById('emailForm');
+        const otpForm = document.getElementById('otpForm');
+        const signupForm = document.getElementById('signupForm');
         const emailInput = document.getElementById('email');
+        const fullNameInput = document.getElementById('fullName');
+        const birthdateInput = document.getElementById('birthdate');
         const passwordInput = document.getElementById('password');
         const confirmPasswordInput = document.getElementById('confirmPassword');
         
-        // Password strength checker
-        passwordInput.addEventListener('input', function() {
-            const password = this.value;
-            const strengthDiv = document.getElementById('passwordStrength');
-            
-            if (password.length === 0) {
-                strengthDiv.textContent = '';
-                return;
-            }
-            
-            let strength = 0;
-            if (password.length >= 6) strength++;
-            if (password.length >= 10) strength++;
-            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-            if (/\d/.test(password)) strength++;
-            if (/[^a-zA-Z\d]/.test(password)) strength++;
-            
-            if (strength <= 2) {
-                strengthDiv.textContent = 'Weak password';
-                strengthDiv.className = 'password-strength strength-weak';
-            } else if (strength <= 3) {
-                strengthDiv.textContent = 'Medium password';
-                strengthDiv.className = 'password-strength strength-medium';
-            } else {
-                strengthDiv.textContent = 'Strong password';
-                strengthDiv.className = 'password-strength strength-strong';
-            }
-        });
+        // Autofill email from URL parameter if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const emailParam = urlParams.get('email');
+        if (emailParam) {
+            emailInput.value = decodeURIComponent(emailParam);
+            console.log('Email autofilled from URL:', emailParam);
+        }
         
-        // Real-time validation
-        fullNameInput.addEventListener('blur', function() {
-            validateName();
-        });
-        
-        ageInput.addEventListener('blur', function() {
-            validateAge();
-        });
-        
-        emailInput.addEventListener('blur', function() {
-            validateEmail();
-        });
-        
-        passwordInput.addEventListener('blur', function() {
-            validatePassword();
-        });
-        
-        confirmPasswordInput.addEventListener('blur', function() {
-            validateConfirmPassword();
-        });
-        
+        // ===== VALIDATION FUNCTIONS =====
         function validateName() {
             const name = fullNameInput.value.trim();
             const errorDiv = document.getElementById('nameError');
@@ -432,17 +504,35 @@
             return true;
         }
         
-        function validateAge() {
-            const age = parseInt(ageInput.value);
-            const errorDiv = document.getElementById('ageError');
+        function validateBirthdate() {
+            console.log('validateBirthdate called');
+            const birthdate = birthdateInput.value;
+            console.log('Birthdate value:', birthdate);
+            const errorDiv = document.getElementById('birthdateError');
             
-            if (isNaN(age) || age < 13 || age > 120) {
-                ageInput.classList.add('error');
+            if (!birthdate) {
+                birthdateInput.classList.add('error');
                 errorDiv.classList.add('show');
                 return false;
             }
             
-            ageInput.classList.remove('error');
+            const birthDate = new Date(birthdate);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            
+            console.log('Calculated age:', age);
+            
+            if (age < 13) {
+                birthdateInput.classList.add('error');
+                errorDiv.classList.add('show');
+                return false;
+            }
+            
+            birthdateInput.classList.remove('error');
             errorDiv.classList.remove('show');
             return true;
         }
@@ -510,86 +600,419 @@
             successDiv.classList.add('show');
         }
         
-        function hideMessages() {
+        function clearMessages() {
             document.getElementById('errorMessage').classList.remove('show');
             document.getElementById('successMessage').classList.remove('show');
         }
         
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            hideMessages();
-            
-            // Validate all fields
+        function validateForm() {
+            console.log('validateForm called');
             const isNameValid = validateName();
-            const isAgeValid = validateAge();
-            const isEmailValid = validateEmail();
+            console.log('Name valid:', isNameValid);
+            const isBirthdateValid = validateBirthdate();
+            console.log('Birthdate valid:', isBirthdateValid);
             const isPasswordValid = validatePassword();
+            console.log('Password valid:', isPasswordValid);
             const isConfirmPasswordValid = validateConfirmPassword();
+            console.log('Confirm password valid:', isConfirmPasswordValid);
             
-            if (!isNameValid || !isAgeValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid) {
+            if (!isNameValid || !isBirthdateValid || !isPasswordValid || !isConfirmPasswordValid) {
                 showError('Please fix the errors in the form');
+                return false;
+            }
+            return true;
+        }
+        
+        // ===== PASSWORD STRENGTH CHECKER =====
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            const strengthDiv = document.getElementById('passwordStrength');
+            
+            if (password.length === 0) {
+                strengthDiv.textContent = '';
                 return;
             }
             
-            const fullName = fullNameInput.value.trim();
-            const age = ageInput.value;
-            const gender = document.getElementById('gender').value;
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.length >= 10) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z\d]/.test(password)) strength++;
+            
+            if (strength <= 2) {
+                strengthDiv.textContent = 'Weak password';
+                strengthDiv.className = 'password-strength strength-weak';
+            } else if (strength <= 3) {
+                strengthDiv.textContent = 'Medium password';
+                strengthDiv.className = 'password-strength strength-medium';
+            } else {
+                strengthDiv.textContent = 'Strong password';
+                strengthDiv.className = 'password-strength strength-strong';
+            }
+        });
+        
+        // ===== REAL-TIME VALIDATION =====
+        fullNameInput.addEventListener('blur', function() {
+            validateName();
+        });
+        
+        birthdateInput.addEventListener('blur', function() {
+            validateBirthdate();
+        });
+        
+        emailInput.addEventListener('blur', function() {
+            validateEmail();
+        });
+        
+        passwordInput.addEventListener('blur', function() {
+            validatePassword();
+        });
+        
+        confirmPasswordInput.addEventListener('blur', function() {
+            validateConfirmPassword();
+        });
+        
+        // ===== STEP 1: Email Verification =====
+        emailForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessages();
+            
+            if (!validateEmail()) {
+                return;
+            }
+            
             const email = emailInput.value.trim();
-            const password = passwordInput.value;
-            
-            const signupContainer = document.querySelector('.signup-container');
-            const signupBtn = document.querySelector('.signup-btn');
-            const originalBtnText = signupBtn.textContent;
-            
-            // Show loading state
-            signupContainer.classList.add('loading');
-            signupBtn.textContent = 'Creating Account...';
-            signupBtn.disabled = true;
+            console.log('Submitting email:', email);
             
             try {
-                // Create Firebase user
+                const submitBtn = emailForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Sending code...';
+                
+                // Call API to send OTP
+                console.log('Fetching:', 'api/send-otp.php');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
+                const response = await fetch('api/send-otp.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                // Check if response is ok
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Response error:', response.status, errorText);
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    console.log('OTP sent, showing OTP form');
+                    // Show OTP form
+                    showOtpForm(email);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Send Verification Code';
+                } else {
+                    console.log('OTP not sent:', data.message);
+                    showError(data.message || 'Failed to send code. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Send Verification Code';
+                }
+            } catch (error) {
+                console.error('Full error object:', error);
+                console.error('Error stack:', error.stack);
+                showError('Error: ' + error.message);
+                const submitBtn = emailForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Verification Code';
+            }
+        });
+
+        // ===== STEP 2: OTP Verification =====
+        const otpInputs = document.querySelectorAll('.otp-input');
+        
+        // Handle OTP input auto-focus
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            });
+            
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+        });
+        
+        // Handle OTP form submission
+        otpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessages();
+            
+            // Get OTP code from inputs
+            const otpCode = Array.from(otpInputs).map(input => input.value).join('');
+            
+            if (otpCode.length !== 6) {
+                showError('Please enter all 6 digits');
+                return;
+            }
+            
+            try {
+                const verifyBtn = document.getElementById('verifyOtpBtn');
+                verifyBtn.disabled = true;
+                verifyBtn.textContent = 'Verifying...';
+                
+                const email = emailInput.value.trim();
+                
+                // Verify OTP
+                const response = await fetch('api/verify-otp.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        otp: otpCode
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // OTP verified, show signup form and hide OTP form
+                    showSignupForm();
+                    verifyBtn.disabled = false;
+                    verifyBtn.textContent = 'Verify Code';
+                } else {
+                    showError(data.message || 'Invalid or expired code. Please try again.');
+                    verifyBtn.disabled = false;
+                    verifyBtn.textContent = 'Verify Code';
+                    // Clear invalid inputs
+                    otpInputs.forEach(input => input.value = '');
+                    otpInputs[0].focus();
+                }
+            } catch (error) {
+                console.error('OTP verification error:', error);
+                showError('Error verifying code: ' + error.message);
+                const verifyBtn = document.getElementById('verifyOtpBtn');
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify Code';
+            }
+        });
+        
+        // Back button to return to email form
+        document.getElementById('backBtn').addEventListener('click', () => {
+            hideOtpForm();
+            clearOtpInputs();
+            stopOtpTimer();
+        });
+        
+        // Resend OTP button
+        let resendCooldown = 0;
+        document.getElementById('resendBtn').addEventListener('click', async () => {
+            if (resendCooldown > 0) return;
+            
+            const email = emailInput.value.trim();
+            
+            try {
+                const resendBtn = document.getElementById('resendBtn');
+                resendBtn.disabled = true;
+                resendBtn.textContent = 'Sending...';
+                
+                const response = await fetch('api/send-otp.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Code sent successfully!');
+                    
+                    // Reset timer
+                    stopOtpTimer();
+                    startOtpTimer();
+                    
+                    // Cooldown for resend button
+                    resendCooldown = 30;
+                    let countdown = 30;
+                    resendBtn.textContent = `Resend (${countdown}s)`;
+                    
+                    const resendInterval = setInterval(() => {
+                        countdown--;
+                        resendBtn.textContent = `Resend (${countdown}s)`;
+                        
+                        if (countdown <= 0) {
+                            clearInterval(resendInterval);
+                            resendCooldown = 0;
+                            resendBtn.disabled = false;
+                            resendBtn.textContent = 'Resend';
+                        }
+                    }, 1000);
+                } else {
+                    showError(data.message || 'Failed to resend code');
+                    resendBtn.disabled = false;
+                    resendBtn.textContent = 'Resend';
+                }
+            } catch (error) {
+                console.error('Resend OTP error:', error);
+                showError('Error resending code: ' + error.message);
+                const resendBtn = document.getElementById('resendBtn');
+                resendBtn.disabled = false;
+                resendBtn.textContent = 'Resend';
+            }
+        });
+
+        // ===== STEP 3: Create Account =====
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessages();
+            
+            console.log('Signup form submitted');
+            console.log('Form validation starting...');
+            
+            // Validate form
+            if (!validateForm()) {
+                console.log('Form validation failed');
+                return;
+            }
+            
+            console.log('Form validation passed');
+            
+            try {
+                const submitBtn = signupForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating Account...';
+                
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+                const fullName = fullNameInput.value.trim();
+                const birthdate = birthdateInput.value;
+                const gender = document.getElementById('gender').value;
+                
+                console.log('Form values:', { email, fullName, birthdate, gender });
+                
+                // Create Firebase account
                 const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
                 const user = userCredential.user;
                 
-                // Save profile to Firestore
+                // Update profile
+                await updateProfile(user, {
+                    displayName: fullName
+                });
+                
+                // Save user data to Firestore
                 await setDoc(doc(firebaseDb, 'users', user.uid), {
                     fullName: fullName,
-                    age: parseInt(age),
-                    gender: gender,
                     email: email,
+                    birthdate: birthdate,
+                    gender: gender,
+                    verified: true,
+                    verifiedAt: serverTimestamp(),
                     createdAt: serverTimestamp(),
                     updatedAt: serverTimestamp()
                 });
                 
-                showSuccess('Account created successfully! Redirecting to login...');
-                
+                showSuccess('Account created successfully! Redirecting...');
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = 'public/dashboard.php';
                 }, 2000);
-            } catch (error) {
-                console.error('Signup error:', error);
                 
-                let errorMessage = error.message || 'Registration failed';
+            } catch (firebaseError) {
+                console.error('Firebase error:', firebaseError);
                 
-                // User-friendly error messages
-                if (error.code === 'auth/email-already-in-use') {
+                let errorMessage = firebaseError.message || 'Account creation failed';
+                if (firebaseError.code === 'auth/email-already-in-use') {
                     errorMessage = 'This email is already registered. Please login instead.';
-                } else if (error.code === 'auth/weak-password') {
-                    errorMessage = 'Password is too weak. Please use a stronger password (at least 6 characters).';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage = 'Invalid email address format.';
-                } else if (error.code === 'auth/operation-not-allowed') {
-                    errorMessage = 'Email/password sign-in is disabled. Please contact support.';
+                } else if (firebaseError.code === 'auth/weak-password') {
+                    errorMessage = 'Password is too weak. Please use a stronger password.';
                 }
                 
                 showError(errorMessage);
-            } finally {
-                // Remove loading state
-                signupContainer.classList.remove('loading');
-                signupBtn.textContent = originalBtnText;
-                signupBtn.disabled = false;
+                const submitBtn = signupForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account';
             }
         });
+        
+        // ===== HELPER FUNCTIONS =====
+        function showOtpForm(email) {
+            document.getElementById('otpEmail').textContent = email;
+            emailForm.classList.add('hidden');
+            otpForm.classList.remove('hidden');
+            clearOtpInputs();
+            otpInputs[0].focus();
+            startOtpTimer();
+        }
+        
+        function hideOtpForm() {
+            otpForm.classList.add('hidden');
+            emailForm.classList.remove('hidden');
+        }
+        
+        function showSignupForm() {
+            otpForm.classList.add('hidden');
+            signupForm.classList.remove('hidden');
+            fullNameInput.focus();
+            stopOtpTimer();
+        }
+        
+        function clearOtpInputs() {
+            otpInputs.forEach(input => input.value = '');
+        }
+        
+        let otpTimerInterval = null;
+        function startOtpTimer() {
+            let timeLeft = 120; // 2 minutes
+            const timerElement = document.getElementById('otpTimer');
+            
+            otpTimerInterval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    stopOtpTimer();
+                    timerElement.classList.add('expired');
+                    timerElement.textContent = 'Code Expired';
+                    document.getElementById('verifyOtpBtn').disabled = true;
+                    document.getElementById('resendBtn').disabled = false;
+                } else if (timeLeft <= 30) {
+                    timerElement.style.color = '#d32f2f';
+                }
+                
+                timeLeft--;
+            }, 1000);
+        }
+        
+        function stopOtpTimer() {
+            if (otpTimerInterval) {
+                clearInterval(otpTimerInterval);
+                otpTimerInterval = null;
+            }
+            const timerElement = document.getElementById('otpTimer');
+            timerElement.classList.remove('expired');
+            timerElement.style.color = '';
+            document.getElementById('verifyOtpBtn').disabled = false;
+        }
     </script>
     <script>
         let deferredInstallPrompt;

@@ -673,8 +673,18 @@
             background: #222836;
         }
 
-        body.dark-mode .form-table input {
+        body.dark-mode .form-table {
             background: #141820;
+            color: #e6e9ef;
+        }
+
+        body.dark-mode .form-table td {
+            border-color: #2a2f3a;
+            color: #e6e9ef;
+        }
+
+        body.dark-mode .form-table input {
+            background: #0a0e13;
             color: #e6e9ef;
             border-color: #2a2f3a;
         }

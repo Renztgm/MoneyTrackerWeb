@@ -1,0 +1,44 @@
+# Development emails
+.emails/
+.emails/*
+
+# Password reset tokens
+api/.tokens/
+api/.tokens/*
+
+# Configuration files with credentials
+config/email.php
+config/*.local.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# PHP
+*.log
+error_log
+
+# Node (if using build tools)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Session files
+session/
+tmp/
+
+# Firebase
+firebase-config.php
+firebase-config.local.php
+
+# Environment
+.env
+.env.local
+.env.*.local
