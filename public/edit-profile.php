@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile - Money Tracker</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="icon" href="/assets/pwa-icon-192.svg">
+    <link rel="apple-touch-icon" href="/assets/pwa-icon-192.svg">
     <style>
         * {
             margin: 0;
@@ -250,6 +254,44 @@
             color: #c62828;
         }
 
+        .install-container {
+            text-align: center;
+            margin-top: 10px;
+            padding-top: 24px;
+            border-top: 1px solid #e6e8ef;
+        }
+
+        body.dark-mode .install-container {
+            border-top-color: #2a2f3a;
+        }
+
+        .install-text {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        body.dark-mode .install-text {
+            color: #9aa3b2;
+        }
+
+        .install-btn {
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .install-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+        }
+
         @keyframes slideDown {
             from {
                 opacity: 0;
@@ -453,6 +495,11 @@
                     <button type="submit" class="btn-primary" id="changePasswordBtn">Change Password</button>
                 </div>
             </form>
+
+            <div class="install-container">
+                <div class="install-text">Want the app?</div>
+                <button id="installBtn" class="install-btn" type="button" hidden>Install App</button>
+            </div>
         </div>
     </div>
 
@@ -649,6 +696,41 @@
 
         function applyTheme(isDark) {
             document.body.classList.toggle('dark-mode', !!isDark);
+        }
+    </script>
+    <script>
+        let deferredInstallPrompt;
+        const installBtn = document.getElementById("installBtn");
+
+        window.addEventListener("beforeinstallprompt", (event) => {
+            event.preventDefault();
+            deferredInstallPrompt = event;
+            installBtn.hidden = false;
+        });
+
+        installBtn.addEventListener("click", async () => {
+            if (!deferredInstallPrompt) {
+                return;
+            }
+
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            installBtn.hidden = true;
+        });
+
+        window.addEventListener("appinstalled", () => {
+            deferredInstallPrompt = null;
+            installBtn.hidden = true;
+        });
+    </script>
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("/sw.js").catch((error) => {
+                    console.warn("Service worker registration failed:", error);
+                });
+            });
         }
     </script>
 </body>
