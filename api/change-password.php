@@ -34,7 +34,8 @@ try {
     }
 
     $email = $_SESSION['email'];
-    $apiKey = "AIzaSyCxMoF0mTrZYej5K8h1_MkXQ3eKQ-4FZvE";
+    $firebaseConfig = require __DIR__ . '/../firebase-config.php';
+    $apiKey = $firebaseConfig['apiKey'];
 
     // Step 1: Verify current password by attempting to sign in
     $verifyUrl = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=$apiKey";

@@ -18,7 +18,8 @@ try {
     }
     
     $userId = $_SESSION['user'];
-    $firebaseDbUrl = "https://moneytrackerweb-default-rtdb.firebaseio.com";
+    $firebaseConfig = require __DIR__ . '/../firebase-config.php';
+    $firebaseDbUrl = $firebaseConfig['databaseURL'];
     
     // Handle GET request - Retrieve user profile
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {

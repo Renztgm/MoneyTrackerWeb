@@ -36,9 +36,8 @@ try {
         throw new Exception('Invalid email format');
     }
     
-    // Firebase Realtime Database URL (replace with your database URL)
-    // Format: https://your-project-id.firebaseio.com/
-    $firebaseDbUrl = "https://moneytrackerweb-default-rtdb.firebaseio.com";
+    $firebaseConfig = require __DIR__ . '/../firebase-config.php';
+    $firebaseDbUrl = $firebaseConfig['databaseURL'];
     
     // Prepare user data
     $userData = [

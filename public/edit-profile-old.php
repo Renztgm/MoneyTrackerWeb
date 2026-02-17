@@ -390,8 +390,9 @@ $profilePicture = $_SESSION['profilePicture'] ?? '';
         </div>
     </div>
 
+    <script src="../firebase-config.php"></script>
     <script>
-        const FIREBASE_API_KEY = 'AIzaSyCxMoF0mTrZYej5K8h1_MkXQ3eKQ-4FZvE';
+        const FIREBASE_API_KEY = window.FIREBASE_API_KEY;
         let uploadedImageData = null;
 
         // Profile Picture Upload Handler

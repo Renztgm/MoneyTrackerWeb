@@ -973,20 +973,13 @@
         </div>
     </div>
 
+    <script src="../firebase-config.php"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCxMoF0mTrZYej5K8h1_MkXQ3eKQ-4FZvE",
-            authDomain: "moneytracker-c1dd1.firebaseapp.com",
-            projectId: "moneytracker-c1dd1",
-            storageBucket: "moneytracker-c1dd1.firebasestorage.app",
-            messagingSenderId: "71356341269",
-            appId: "1:71356341269:web:8ae54dbdfebe06acd3c21c",
-            measurementId: "G-49036TSCHY"
-        };
+        const firebaseConfig = window.FIREBASE_CONFIGS.app;
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);

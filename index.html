@@ -215,18 +215,12 @@
         }
     </style>
     <!-- Firebase SDK -->
+    <script src="firebase-config.php"></script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
         
-        const firebaseConfig = {
-            apiKey: "AIzaSyCxMoF0mTrZYej5K8h1_MkXQ3eKQ-4FZvE",
-            authDomain: "moneytracker-c1dd1.firebaseapp.com",
-            projectId: "moneytracker-c1dd1",
-            storageBucket: "moneytracker-c1dd1.firebasestorage.app",
-            messagingSenderId: "426881166394",
-            appId: "1:426881166394:web:8f8ad1b09fc5b9267ede6e"
-        };
+        const firebaseConfig = window.FIREBASE_CONFIGS.authApp;
         
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);

@@ -7,8 +7,9 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
 try {
-    // Firebase Web API Key
-    $apiKey = "AIzaSyCxMoF0mTrZYej5K8h1_MkXQ3eKQ-4FZvE";
+    $firebaseConfig = require __DIR__ . '/../firebase-config.php';
+    $apiKey = $firebaseConfig['apiKey'];
+    $firebaseDbUrl = $firebaseConfig['databaseURL'];
     
     // Check if request method is POST
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -37,7 +38,6 @@ try {
         $_SESSION['email'] = $email;
         
         // Fetch user profile from Firebase Realtime Database
-        $firebaseDbUrl = "https://moneytrackerweb-default-rtdb.firebaseio.com";
         $profileUrl = "$firebaseDbUrl/users/$userId.json";
         
         $profileData = @file_get_contents($profileUrl);
@@ -105,7 +105,6 @@ try {
         $_SESSION['email'] = $response['email'];
         
         // Fetch user profile from Firebase Realtime Database
-        $firebaseDbUrl = "https://moneytrackerweb-default-rtdb.firebaseio.com";
         $profileUrl = "$firebaseDbUrl/users/$userId.json";
         
         $profileData = @file_get_contents($profileUrl);
